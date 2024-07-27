@@ -1,14 +1,22 @@
 import torch
 from .trader_config import TraderCfg
+from collections import defaultdict
+import yfinance as yf
 
 
 class Trader():
     def __init__(self, cfg: TraderCfg):
         self.cfg = cfg
-        
+        self.max_position = cfg.trader.max_position
+        self.balance = cfg.trader.balance
+        self.close = cfg.trader.close
+        self.value = cfg.trader.balance
 
+        self.position = defaultdict(int)
+        self.terminated = False
+        
     def _prepare_reward_function(self):
-        """ Prepares a list of reward functions, whcih will be called to compute the total reward.
+        """ Prepares a list of reward functions, which will be called to compute the total reward.
             Looks for self._reward_<REWARD_NAME>, where <REWARD_NAME> are names of all non zero reward scales in the cfg.
         """
         # remove zero scales + multiply non-zero ones by dt
@@ -51,7 +59,40 @@ class Trader():
             self.rew_buf += rew
             self.episode_sums["termination"] += rew
 
-    def trade(self, stock):
-        print(f'{self.name} is trading {stock} on {self.exchange}')
+    def compute_value(self):
+        self.value = self.balance + sum([amount * stock.price for stock, amount in self.position.items()])
+        return self.value
+    
+    def trade(self, actions):
+        date = actions["date"]
+        
+
+
+    def _reset(self):
+        self.position = defaultdict(int)
+        self.balance = self.cfg.trader.balance
+        self.value = self.cfg.trader.balance
+        self.terminated = False
+
+    #------------ reward functions----------------
+
+    def _reward_termination(self):
+        return int(self.terminated) * 100
+
+    def _reward_profit(self):
+        pass
+
+    def _reward_extreme_position(self):
+        exceeding_positions = torch.Tensor([amount for amount in self.position.values() if amount > self.max_position])
+        return exceeding_positions.sum()/len(exceeding_positions) if len(exceeding_positions) > 0 else 0
+
+    def _reward_sharpe(self):
+        pass
+
+
+
+    # TODO: Think of other reward functions
+
+    
 
     
