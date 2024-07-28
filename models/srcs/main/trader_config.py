@@ -1,12 +1,21 @@
 class TraderCfg:
     class envs:
         num_envs = 3072
-
+        num_obs = 312
+        num_privileged_obs = 312
+        num_actions = 12 # number of stocks to buy/sell
+        
     class market:
         # choose from ["tech", "finance", "energy", "sp500"]
-        stock_groups = ["tech", "finance"]
-        slip = 0.2 # slip for a single purchase
+        stock_groups = ["tech"]
+        fee = 0.2 # slip for a single purchase
         partial_exchange = True # allow partial exchange of stocks
+        start_date = '2013-01-01'
+        end_date = '2023-01-01'
+
+        # uncomment when infering
+        # start_date = '2023-01-01'
+        # end_date = '2024-07-01'
 
     class trader:
         balance = 10000
@@ -15,7 +24,10 @@ class TraderCfg:
     
     class rewards:
         class scales:
-            pass
+            termination = -10.0
+            profit = 1.0 * 8
+            extreme_position = 1e-3
+
         only_positive_rewards = True
     
 
@@ -50,11 +62,11 @@ class TraderCfgPPO:
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env = 24 # per iteration
-        max_iterations = 5000 # number of policy updates   4500 orginally
+        max_iterations = 5000 # number of policy updates 4500 orginally
 
         # logging
         save_interval = 200 # check for potential saves every this many iterations
-        experiment_name = 'test'
+        experiment_name = 'trader'
         run_name = ''
         # load and resume
         resume = False

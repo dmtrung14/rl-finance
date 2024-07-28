@@ -8,7 +8,6 @@ from rl.vec_env import VecEnv
 from rl.on_policy_runner import OnPolicyRunner
 from models.srcs import TraderConfig, TraderConfigPPO
 from models.utils.helpers import *
-# TODO: fix the task registry
 
 class TaskRegistry():
     def __init__(self):
@@ -46,9 +45,7 @@ class TaskRegistry():
             isaacgym.VecTaskPython: The created environment
             Dict: the corresponding config file
         """
-        # if no args passed get command line arguments
-        if args is None:
-            args = get_args()
+
         # check if there is a registered env with that name
         if name in self.task_classes:
             task_class = self.get_task_class(name)
@@ -60,15 +57,12 @@ class TaskRegistry():
         # override cfg from args (if specified)
         env_cfg, _ = update_cfg_from_args(env_cfg, None, args)
         set_seed(env_cfg.seed)
-        # parse sim params (convert to dict first)
-        sim_params = {"sim": class_to_dict(env_cfg.sim)}
-        env = task_class(   cfg=env_cfg,
-                            physics_engine=args.physics_engine,
-                            sim_device=args.sim_device,
-                            headless=args.headless)
+
+        env = task_class(cfg=env_cfg)
+
         return env, env_cfg
 
-    def make_alg_runner(self, env, name=None, args=None, use_depth = False, train_cfg=None, log_root="default") -> Tuple[OnPolicyRunner, TraderConfigPPO]:
+    def make_alg_runner(self, env, name=None, args=None, train_cfg=None, log_root="default") -> Tuple[OnPolicyRunner, TraderConfigPPO]:
         """ Creates the training algorithm  either from a registered namme or from the provided config file.
 
         Args:
@@ -112,8 +106,6 @@ class TaskRegistry():
         runner = OnPolicyRunner(env, train_cfg_dict, log_dir, device=args.rl_device)
         #save resume path before creating a new log_dir
         resume = train_cfg.runner.resume
-        if use_depth:
-            resume = True
 
         if resume:
             # load previously trained model

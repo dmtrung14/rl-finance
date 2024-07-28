@@ -59,7 +59,7 @@ class OnPolicyRunner:
         self.tot_time = 0
         self.current_learning_iteration = 0
     
-    def learn_RL(self, num_learning_iterations, init_at_random_ep_len=False):
+    def learn(self, num_learning_iterations, init_at_random_ep_len=False):
         # initialize writer
         if self.log_dir is not None and self.writer is None:
             self.writer = SummaryWriter(log_dir=self.log_dir, flush_secs=10)

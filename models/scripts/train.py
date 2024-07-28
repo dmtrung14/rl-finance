@@ -1,8 +1,7 @@
 import numpy as np
 from datetime import datetime
-
-from models.utils.helpers import set_seed, get_args
-from models.utils.task_registry import task_registry
+from utils.helpers import set_seed, get_args
+from utils.task_registry import task_registry
 
 def train(args):
     env, env_cfg = task_registry.make_env(name=args.task, args=args)
