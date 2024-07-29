@@ -1,9 +1,9 @@
-from models import TRADER_ROOT_DIR
+from rl_trader import TRADER_ROOT_DIR
 import os
 
 import yfinance as yf
-from models.srcs import *
-from models.utils import  get_args, export_policy_as_jit, task_registry, Logger
+from rl_trader.srcs import *
+from rl_trader.utils import  get_args, export_policy_as_jit, task_registry, Logger
 
 import numpy as np
 import torch

@@ -6,8 +6,8 @@ import numpy as np
 
 from rl.vec_env import VecEnv
 from rl.on_policy_runner import OnPolicyRunner
-from models.srcs import TraderConfig, TraderConfigPPO
-from models.utils.helpers import *
+from rl_trader.srcs import TraderConfig, TraderConfigPPO
+from rl_trader.utils.helpers import *
 
 class TaskRegistry():
     def __init__(self):

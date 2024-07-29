@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from rl.actor_critic import ActorCritic
-from rsl_rl.storage import RolloutStorage # TODO: review if actually needed?
+# from rsl_rl.storage import RolloutStorage # TODO: review if actually needed?
 
 class PPO:
     actor_critic: ActorCritic

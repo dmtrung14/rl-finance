@@ -6,7 +6,7 @@ import random
 
 import argparse
 
-from models import TRADER_ROOT_DIR, TRADER_SRCS_DIR
+from rl_trader import TRADER_ROOT_DIR, TRADER_SRCS_DIR
 
 def class_to_dict(obj) -> dict:
     if not  hasattr(obj,"__dict__"):

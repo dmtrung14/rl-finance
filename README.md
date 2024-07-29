@@ -1,2 +1,5 @@
 # rl-finance
-reinforcement learning algorithmic trading
+
+A Reinforcement Learning pipeline for Algorithmic Trading
+
+
