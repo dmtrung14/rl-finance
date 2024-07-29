@@ -5,4 +5,4 @@ import os
 
 from rl_trader.utils.task_registry import task_registry
 
-task_registry.register_task('trader', Trader, TraderCfg(), TraderCfgPPO())
+task_registry.register('trader', Trader, TraderCfg(), TraderCfgPPO())

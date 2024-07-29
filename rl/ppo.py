@@ -3,15 +3,12 @@ import torch.nn as nn
 import torch.optim as optim
 
 from rl.actor_critic import ActorCritic
-# from rsl_rl.storage import RolloutStorage # TODO: review if actually needed?
+from rl.storage import RolloutStorage
 
 class PPO:
     actor_critic: ActorCritic
     def __init__(self,
-                 actor_critic,
-                 depth_encoder,
-                 depth_encoder_paras,
-                 depth_actor,                 
+                 actor_critic,                
                  num_learning_epochs=1,
                  num_mini_batches=1,
                  clip_param=0.2,
@@ -27,7 +24,7 @@ class PPO:
                  device='cpu',
                  ):
 
-        self.device = device
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.desired_kl = desired_kl
         self.schedule = schedule
@@ -50,16 +47,6 @@ class PPO:
         self.lam = lam
         self.max_grad_norm = max_grad_norm
         self.use_clipped_value_loss = use_clipped_value_loss
-
-        # Depth encoder
-        self.if_depth = depth_encoder != None
-        if self.if_depth:
-            self.depth_encoder = depth_encoder
-            self.depth_encoder_optimizer = optim.Adam(self.depth_encoder.parameters(), lr=depth_encoder_paras["learning_rate"])
-            self.depth_encoder_paras = depth_encoder_paras
-            self.depth_actor = depth_actor
-            self.depth_actor_optimizer = optim.Adam([*self.depth_actor.parameters(), *self.depth_encoder.parameters()], lr=depth_encoder_paras["learning_rate"])
-
 
     def init_storage(self, num_envs, num_transitions_per_env, actor_obs_shape, critic_obs_shape, action_shape):
         self.storage = RolloutStorage(num_envs, num_transitions_per_env, actor_obs_shape, critic_obs_shape, action_shape, self.device)

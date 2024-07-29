@@ -1,5 +1,5 @@
 class TraderCfg:
-    class envs:
+    class env:
         num_envs = 3072
         num_obs = 312
         num_privileged_obs = 312

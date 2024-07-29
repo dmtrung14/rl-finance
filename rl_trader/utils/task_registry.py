@@ -6,7 +6,7 @@ import numpy as np
 
 from rl.vec_env import VecEnv
 from rl.on_policy_runner import OnPolicyRunner
-from rl_trader.srcs import TraderConfig, TraderConfigPPO
+from rl_trader.srcs.main.trader_config import TraderCfg, TraderCfgPPO
 from rl_trader.utils.helpers import *
 
 class TaskRegistry():
@@ -15,7 +15,7 @@ class TaskRegistry():
         self.env_cfgs = {}
         self.train_cfgs = {}
     
-    def register(self, name: str, task_class: VecEnv, env_cfg: TraderConfig, train_cfg: TraderConfigPPO):
+    def register(self, name: str, task_class: VecEnv, env_cfg: TraderCfg, train_cfg: TraderCfgPPO):
         self.task_classes[name] = task_class
         self.env_cfgs[name] = env_cfg
         self.train_cfgs[name] = train_cfg
@@ -23,14 +23,14 @@ class TaskRegistry():
     def get_task_class(self, name: str) -> VecEnv:
         return self.task_classes[name]
     
-    def get_cfgs(self, name) -> Tuple[TraderConfig, TraderConfigPPO]:
+    def get_cfgs(self, name) -> Tuple[TraderCfg, TraderCfgPPO]:
         train_cfg = self.train_cfgs[name]
         env_cfg = self.env_cfgs[name]
         # copy seed
         env_cfg.seed = train_cfg.seed
         return env_cfg, train_cfg
     
-    def make_env(self, name, args=None, env_cfg=None) -> Tuple[VecEnv, TraderConfig]:
+    def make_env(self, name, args=None, env_cfg=None) -> Tuple[VecEnv, TraderCfg]:
         """ Creates an environment either from a registered namme or from the provided config file.
 
         Args:
@@ -62,7 +62,7 @@ class TaskRegistry():
 
         return env, env_cfg
 
-    def make_alg_runner(self, env, name=None, args=None, train_cfg=None, log_root="default") -> Tuple[OnPolicyRunner, TraderConfigPPO]:
+    def make_alg_runner(self, env, name=None, args=None, train_cfg=None, log_root="default") -> Tuple[OnPolicyRunner, TraderCfgPPO]:
         """ Creates the training algorithm  either from a registered namme or from the provided config file.
 
         Args:

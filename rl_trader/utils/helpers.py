@@ -77,12 +77,6 @@ def update_cfg_from_args(env_cfg, cfg_train, args):
         # num envs
         if args.num_envs is not None:
             env_cfg.env.num_envs = args.num_envs
-        if args.use_camera:
-            env_cfg.depth.use_camera = args.use_camera
-        if env_cfg.depth.use_camera:
-            env_cfg.env.num_envs = env_cfg.depth.camera_num_envs
-            env_cfg.terrain.num_rows = env_cfg.depth.camera_terrain_num_rows
-            env_cfg.terrain.num_cols = env_cfg.depth.camera_terrain_num_cols
 
     if cfg_train is not None:
         if args.seed is not None:
@@ -108,7 +102,7 @@ def get_args():
     # TODO: not sure if this works with argparse
 
     custom_parameters = [
-        {"name": "--task", "type": str, "default": "anymal_c_flat", "help": "Resume training or start testing from a checkpoint. Overrides config file if provided."},
+        {"name": "--task", "type": str, "default": "trader", "help": "Resume training or start testing from a checkpoint. Overrides config file if provided."},
         {"name": "--resume", "action": "store_true", "default": False,  "help": "Resume training from a checkpoint"},
         {"name": "--experiment_name", "type": str,  "help": "Name of the experiment to run or load. Overrides config file if provided."},
         {"name": "--run_name", "type": str,  "help": "Name of the run. Overrides config file if provided."},
@@ -123,15 +117,10 @@ def get_args():
         {"name": "--max_iterations", "type": int, "help": "Maximum number of training iterations. Overrides config file if provided."},
     ]
     # parse arguments
-    args = argparse.parse_args(
-        description="RL Policy",
-        custom_parameters=custom_parameters)
-
-    # name allignment
-    args.sim_device_id = args.compute_device_id
-    args.sim_device = args.sim_device_type
-    if args.sim_device=='cuda':
-        args.sim_device += f":{args.sim_device_id}"
+    parser = argparse.ArgumentParser()
+    for param in custom_parameters:
+        parser.add_argument(param["name"], default=param.get("default", None), help=param.get("help", None), action=param.get("action", None))
+    args = parser.parse_args()
     return args
 
 def export_policy_as_jit(actor_critic, path):

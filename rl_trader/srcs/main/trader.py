@@ -4,6 +4,7 @@ import torch
 from .trader_config import TraderCfg
 from collections import defaultdict
 from utils.stock_groups import Tickers
+from utils.helpers import class_to_dict
 import yfinance as yf
 
 
@@ -11,29 +12,34 @@ import yfinance as yf
 class Trader():
     def __init__(self, cfg: TraderCfg):
         self.cfg = cfg
+        self._parse_cfg()
         self.max_position = cfg.trader.max_position
         self.close = cfg.trader.close
         self.fee = cfg.market.fee
         self.partial_exchange = cfg.market.partial_exchange
         self.date = pd.to_datetime(cfg.market.start_date)
         self.end = pd.to_datetime(cfg.market.end_date)
+
+        self._get_symbols()
+        # engine params
+        self.num_envs = cfg.env.num_envs
+        self.num_obs = cfg.env.num_obs
+        self.num_privileged_obs = cfg.env.num_privileged_obs
+        self.num_actions = self.num_stocks = len(self.symbols)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        self._prepare_reward_function()
+        
+        # init buffers
+        self._init_buffers()
+
+        # download data
         self.finance_df = yf.download(tickers=self.symbols, 
                                       start=self.date - pd.DateOffset(day=14), 
                                       end=self.end + pd.DateOffset(day=14)
                                       ).stack().iloc[:, np.r_[0, 2:6]]
-        self._prepare_reward_function()
-        self._get_symbols()
-
-        # engine params
-        self.num_envs = cfg.envs.num_envs
-        self.num_obs = cfg.envs.num_obs
-        self.num_privileged_obs = cfg.envs.num_privileged_obs
-        self.num_actions = self.num_stocks = len(self.symbols)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-        # init buffers
-        self._init_buffers()
             
     def _init_buffers(self):
         self.pos_buf = torch.zeros(self.num_envs, self.num_actions, device=self.device, dtype=torch.float)
@@ -48,7 +54,7 @@ class Trader():
 
     def _get_symbols(self):
         self.symbols = []
-        for group in self.cfg.market['stock_groups']:
+        for group in self.cfg.market.stock_groups:
             if group == "tech":
                 self.symbols += Tickers.tech
             elif group == "finance":
@@ -57,7 +63,10 @@ class Trader():
                 self.symbols += Tickers.energy
             else:
                 raise ValueError("Invalid stock group, choose from ['tech', 'finance', 'energy']")
-
+            
+    def _parse_cfg(self):
+        self.reward_scales = class_to_dict(self.cfg.rewards.scales)
+        # self.max_episode_length = np.ceil(self.max_episode_length_s / self.dt)
         
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, which will be called to compute the total reward.
@@ -69,7 +78,7 @@ class Trader():
             if scale==0:
                 self.reward_scales.pop(key) 
             else:
-                self.reward_scales[key] *= self.dt
+                self.reward_scales[key] *= 1
         # prepare list of functions
         self.reward_functions = []
         self.reward_names = []
@@ -188,10 +197,10 @@ class Trader():
         self.price_buf = obs.repeat(self.num_envs, 1)
         self.privileged_price_buf = privileged_obs.repeat(self.num_envs, 1)
 
-    def get_observation(self):
+    def get_observations(self):
         return self.obs_buf
             
-    def get_privileged_observation(self):
+    def get_privileged_observations(self):
         return self.privileged_obs_buf
 
     #------------ reward functions----------------
