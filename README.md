@@ -14,8 +14,8 @@ This repository provides the environment used to train an Algorithmic Trading ag
 
 ## Useful Links ##
 
-- Project website: [To Update]\
-- `rsl_rl`: https://github.com/leggedrobotics/rsl_rl
+- Project website: [To Update]
+- `rsl_rl` (PPO code structure): https://github.com/leggedrobotics/rsl_rl
 
 
 ## Installation ##
@@ -71,5 +71,7 @@ The default environment `main` is equipped with the agent that performs basic tr
 ![preliminary_results](assets/img/results.png)
 
 ## Future Directions
-- [ ] Adding reward functions and financial theories
-- [ ] Adding sentiment analysis and more complex observations
+- [ ] Adding reward functions and financial theories.
+- [ ] Adding sentiment analysis and more complex observations.
+- [ ] Framework for Intraday Trading.
+- [ ] Integrate into broker services or simulators.
