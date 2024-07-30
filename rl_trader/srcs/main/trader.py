@@ -6,7 +6,10 @@ from collections import defaultdict
 from utils.stock_groups import Tickers
 from utils.helpers import class_to_dict
 import yfinance as yf
+import warnings
 
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 
 class Trader():
@@ -35,8 +38,8 @@ class Trader():
 
         # download data
         self.finance_df = yf.download(tickers=self.symbols, 
-                                      start=self.date - pd.DateOffset(day=14), 
-                                      end=self.end + pd.DateOffset(day=14)
+                                      start=self.date-pd.DateOffset(days=14), 
+                                      end=self.end + pd.DateOffset(days=14)
                                       ).stack().iloc[:, np.r_[0, 2:6]]
 
 
@@ -115,11 +118,9 @@ class Trader():
     def step(self, actions):
         # actions: tensor of shape (num_envs, num_actions)
         # actions[i, j] is the amount of stock j to buy/sell in env i
-        today_close_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,0].values, device=self.device, dtype=torch.float)
-        today_open_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,3].values, device=self.device, dtype=torch.float)
-        self.pos_buf += torch.matmul(actions, today_close_price)
-        self.balance_buf -= torch.matmul(actions, today_open_price) + actions.abs().sum(dim=1) * self.fee
-       
+        today_open_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,3].values, device=self.device, dtype=torch.float).unsqueeze(1)
+        self.pos_buf += actions
+        self.balance_buf -= torch.matmul(actions, today_open_price).flatten() + actions.abs().sum(dim=1) * self.fee
         # compute portfolio value
         self.compute_value()
 
@@ -131,6 +132,8 @@ class Trader():
 
     def post_step(self):
         self.date += pd.DateOffset(days=1)
+        while self.date not in self.finance_df.index and self.date < self.end:
+            self.date += pd.DateOffset(days=1)
         self.check_termination()
         self.compute_reward()
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
@@ -138,16 +141,17 @@ class Trader():
         self.compute_observation()
     
     def compute_value(self):
-        self.value_buf = self.balance + sum([amount * stock.price for stock, amount in self.position.items()])
+        today_close_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,0].values, device=self.device, dtype=torch.float).unsqueeze(1)
+        self.value_buf = self.balance_buf + torch.sum(torch.matmul(self.pos_buf, today_close_price), dim=1)
 
     def check_termination(self):
-        self.reset_close_buf = torch.tensor([1 if value < self.close else 0 for value in self.value_buf], device=self.device, dtype=torch.float)
-        self.reset_balance_buf = torch.tensor([1 if balance < 0 else 0 for balance in self.balance_buf], device=self.device, dtype=torch.float)
+        self.reset_close_buf = torch.tensor([1 if value < self.close else 0 for value in self.value_buf], device=self.device, dtype=torch.int8)
+        self.reset_balance_buf = torch.tensor([1 if balance < 0 else 0 for balance in self.balance_buf], device=self.device, dtype=torch.int8)
         self.reset_buf = self.reset_close_buf | self.reset_balance_buf
         if self.date >= self.end:
-            self.timeout = 1.
+            self.timeout = 1
             self.reset_buf = torch.ones(self.num_envs, device=self.device, dtype=torch.float)
-        else: self.timeout = 0.
+        else: self.timeout = 0
 
     def reset_idx(self, idx):
         if len(idx) == self.num_envs:
@@ -162,33 +166,32 @@ class Trader():
         self.pos_buf[:] = torch.zeros(self.num_envs, self.num_actions, device=self.device, dtype=torch.float)
         self.balance_buf[:] = self.cfg.trader.balance
         self.value_buf[:] = self.balance_buf
-        self.date = self.cfg.market.start_date
+        self.date = pd.to_datetime(self.cfg.market.start_date)
 
     def compute_observation(self):
         """
         Computing both observation and privileged observation
         """
         self.prepare_prices()
-
         self.obs_buf = torch.cat(
-            (self.balance_buf,
+            (self.balance_buf.unsqueeze(1),
              self.pos_buf,
              self.price_buf),
-            dim=1
+            dim=-1
         )
         
         self.privileged_obs_buf = torch.cat(
-            (self.balance_buf,
+            (self.balance_buf.unsqueeze(1),
              self.pos_buf,
              self.privileged_price_buf),            
-            dim=1
+            dim=-1
         )
 
     def prepare_prices(self):
-        end_date_offset = self.date + pd.DateOffeset(day=1)
-        start_date_offset = self.date - pd.DateOffset(day=14)
+        end_date_offset = self.date + pd.DateOffset(days=1)
+        start_date_offset = self.date - pd.DateOffset(days=14)
         last_14_days = self.finance_df.loc[start_date_offset:end_date_offset]
-        df_tensor = torch.tensor(last_14_days.values)
+        df_tensor = torch.tensor(last_14_days.values, device=self.device, dtype=torch.float)
         last_5_days = df_tensor[-self.num_stocks * 6:-self.num_stocks].flatten()
         open_price_today = df_tensor[-self.num_stocks:][:, 3].flatten()
         price_today = df_tensor[-self.num_stocks:].flatten()
@@ -212,8 +215,10 @@ class Trader():
         return (self.value_buf - self.cfg.trader.balance) / self.cfg.trader.balance
 
     def _reward_extreme_position(self):
-        return torch.clip(self.pos_buf - self.max_position, min = 0)
-
+        today_close_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,0].values, device=self.device, dtype=torch.float).unsqueeze(1)
+        return torch.sum(torch.clip((torch.matmul(self.pos_buf, 
+                                                  today_close_price).flatten() - self.max_position)/self.max_position, 
+                                    min = 0))
     def _reward_sharpe(self):
         return 0
 

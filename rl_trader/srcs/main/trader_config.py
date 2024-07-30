@@ -1,8 +1,8 @@
 class TraderCfg:
     class env:
         num_envs = 3072
-        num_obs = 312
-        num_privileged_obs = 312
+        num_obs = 325
+        num_privileged_obs = 373
         num_actions = 12 # number of stocks to buy/sell
         
     class market:
@@ -10,7 +10,7 @@ class TraderCfg:
         stock_groups = ["tech"]
         fee = 0.2 # slip for a single purchase
         partial_exchange = True # allow partial exchange of stocks
-        start_date = '2013-01-01'
+        start_date = '2013-01-31'
         end_date = '2023-01-01'
 
         # uncomment when infering

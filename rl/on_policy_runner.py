@@ -152,11 +152,6 @@ class OnPolicyRunner:
         if len(locs["rewbuffer"]) > 0:
             self.writer.add_scalar("Train/mean_reward", statistics.mean(locs["rewbuffer"]), locs["it"])
             self.writer.add_scalar("Train/mean_episode_length", statistics.mean(locs["lenbuffer"]), locs["it"])
-            if self.logger_type != "wandb":  # wandb does not support non-integer x-axis logging
-                self.writer.add_scalar("Train/mean_reward/time", statistics.mean(locs["rewbuffer"]), self.tot_time)
-                self.writer.add_scalar(
-                    "Train/mean_episode_length/time", statistics.mean(locs["lenbuffer"]), self.tot_time
-                )
 
         str = f" \033[1m Learning iteration {locs['it']}/{locs['tot_iter']} \033[0m "
 
@@ -205,14 +200,7 @@ class OnPolicyRunner:
             "iter": self.current_learning_iteration,
             "infos": infos,
         }
-        if self.empirical_normalization:
-            saved_dict["obs_norm_state_dict"] = self.obs_normalizer.state_dict()
-            saved_dict["critic_obs_norm_state_dict"] = self.critic_obs_normalizer.state_dict()
         torch.save(saved_dict, path)
-
-        # Upload model to external logging service
-        if self.logger_type in ["neptune", "wandb"]:
-            self.writer.save_model(path, self.current_learning_iteration)
 
     def load(self, path, load_optimizer=True):
         loaded_dict = torch.load(path)

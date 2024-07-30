@@ -14,6 +14,5 @@ def train(args):
     ppo_runner.learn(num_learning_iterations=train_cfg.runner.max_iterations, init_at_random_ep_len=True)
 
 if __name__ == '__main__':
-    print("actually did something")
     args = get_args()
     train(args)

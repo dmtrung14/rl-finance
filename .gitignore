@@ -1,2 +1,3 @@
 rl-finance/
 rl_trader/tests/
+logs/trader/*.pt
