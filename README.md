@@ -75,3 +75,4 @@ The default environment `main` is equipped with the agent that performs basic tr
 - [ ] Adding sentiment analysis and more complex observations.
 - [ ] Framework for Intraday Trading.
 - [ ] Integrate into broker services or simulators.
+- [ ] Explore DDPG in place of PPO
