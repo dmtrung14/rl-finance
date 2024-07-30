@@ -97,6 +97,37 @@ def update_cfg_from_args(env_cfg, cfg_train, args):
 
     return env_cfg, cfg_train
 
+def welcome():
+    title = "#" + "-"*20 + "Reinforcement Learning Finance (rl-finance)" + '-' * 20+ "#"
+    subtitle = "MIT License, © 2024, Trung Dang"
+    print(title)
+    print(subtitle.center(len(title)))
+    print("All rights reserved.".center(len(title)))
+    print("")
+
+    print("Permission is hereby granted, free of charge, to any person obtaining a copy")
+    print("of this software and associated documentation files (the \"Software\"), to deal")
+    print("in the Software without restriction, including without limitation the rights")
+    print("to use, copy, modify, merge, publish, distribute, sublicense, and/or sell")
+    print("copies of the Software, and to permit persons to whom the Software is")
+    print("furnished to do so, subject to the following conditions:")
+
+    print("")
+
+    print("The above copyright notice and this permission notice shall be included in")
+    print("all copies or substantial portions of the Software.")
+
+    print("")
+
+    print("THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR")
+    print("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,")
+    print("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE")
+    print("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER")
+    print("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,")
+    print("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN")
+    print("THE SOFTWARE.")
+
+
 def get_args():
 
     # TODO: not sure if this works with argparse

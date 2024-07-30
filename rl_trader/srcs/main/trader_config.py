@@ -1,14 +1,14 @@
 class TraderCfg:
     class env:
         num_envs = 3072
-        num_obs = 325
-        num_privileged_obs = 373
+        num_obs = 326
+        num_privileged_obs = 374
         num_actions = 12 # number of stocks to buy/sell
         
     class market:
         # choose from ["tech", "finance", "energy", "sp500"]
         stock_groups = ["tech"]
-        fee = 0.2 # slip for a single purchase
+        fee = 0.0 # slip for a single purchase
         partial_exchange = True # allow partial exchange of stocks
         start_date = '2013-01-31'
         end_date = '2023-01-01'
@@ -19,26 +19,26 @@ class TraderCfg:
 
     class trader:
         balance = 10000
-        max_position = 1000 # max USD value of a single stock to hold
+        max_position = 2000 # max USD value of a single stock to hold
         close = 8000 # terminate if portfolio value is below 8000
-    
+        max_action = 18 # max number of stocks to buy/sell
+
     class rewards:
         class scales:
-            termination = -10.0
-            profit = 1.0 * 8
-            extreme_position = 1e-3
+            termination = 5.0
+            profit = 1.0 * 10
+            extreme_position = -1e-2
 
         only_positive_rewards = True
     
 
 class TraderCfgPPO:
-    seed = 1
+    seed = 0
     runner_class_name = 'OnPolicyRunner'
     class policy:
         init_noise_std = 1.0
-        actor_hidden_dims = [256, 128, 64]
-        critic_hidden_dims = [256, 128, 64]
-        scan_encoder_dims = [128, 64, 32]
+        actor_hidden_dims = [512, 256, 128]
+        critic_hidden_dims = [512, 256, 128]
         activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         
     # TODO: REVIEW
@@ -50,7 +50,7 @@ class TraderCfgPPO:
         entropy_coef = 0.01
         num_learning_epochs = 5
         num_mini_batches = 4 # mini batch size = num_envs*nsteps / nminibatches
-        learning_rate = 1.e-3 #5.e-4
+        learning_rate = 5e-3 #1e-3
         schedule = 'adaptive' # could be adaptive, fixed
         gamma = 0.99
         lam = 0.95
@@ -61,8 +61,8 @@ class TraderCfgPPO:
     class runner:
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
-        num_steps_per_env = 24 # per iteration
-        max_iterations = 5000 # number of policy updates 4500 orginally
+        num_steps_per_env = 7 # per iteration
+        max_iterations = 2000 # number of policy updates 4500 orginally
 
         # logging
         save_interval = 200 # check for potential saves every this many iterations

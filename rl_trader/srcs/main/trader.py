@@ -20,6 +20,7 @@ class Trader():
         self.close = cfg.trader.close
         self.fee = cfg.market.fee
         self.partial_exchange = cfg.market.partial_exchange
+        self.max_action = cfg.trader.max_action
         self.date = pd.to_datetime(cfg.market.start_date)
         self.end = pd.to_datetime(cfg.market.end_date)
 
@@ -118,11 +119,11 @@ class Trader():
     def step(self, actions):
         # actions: tensor of shape (num_envs, num_actions)
         # actions[i, j] is the amount of stock j to buy/sell in env i
+        actions = torch.clip(actions, min=-self.max_action, max=self.max_action)
         today_open_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,3].values, device=self.device, dtype=torch.float).unsqueeze(1)
         self.pos_buf += actions
         self.balance_buf -= torch.matmul(actions, today_open_price).flatten() + actions.abs().sum(dim=1) * self.fee
         # compute portfolio value
-        self.compute_value()
 
         # cleaning up after stepping
         self.post_step()
@@ -131,13 +132,14 @@ class Trader():
         return self.obs_buf, self.privileged_obs_buf, self.rew_buf, self.reset_buf, self.extras
 
     def post_step(self):
+        self.compute_value()
         self.date += pd.DateOffset(days=1)
         while self.date not in self.finance_df.index and self.date < self.end:
             self.date += pd.DateOffset(days=1)
         self.check_termination()
-        self.compute_reward()
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
         self.reset_idx(env_ids)
+        self.compute_reward()
         self.compute_observation()
     
     def compute_value(self):
@@ -176,6 +178,7 @@ class Trader():
         self.obs_buf = torch.cat(
             (self.balance_buf.unsqueeze(1),
              self.pos_buf,
+             self.value_buf.unsqueeze(1),
              self.price_buf),
             dim=-1
         )
@@ -183,6 +186,7 @@ class Trader():
         self.privileged_obs_buf = torch.cat(
             (self.balance_buf.unsqueeze(1),
              self.pos_buf,
+             self.value_buf.unsqueeze(1),
              self.privileged_price_buf),            
             dim=-1
         )
@@ -215,10 +219,9 @@ class Trader():
         return (self.value_buf - self.cfg.trader.balance) / self.cfg.trader.balance
 
     def _reward_extreme_position(self):
-        today_close_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,0].values, device=self.device, dtype=torch.float).unsqueeze(1)
-        return torch.sum(torch.clip((torch.matmul(self.pos_buf, 
-                                                  today_close_price).flatten() - self.max_position)/self.max_position, 
-                                    min = 0))
+        today_close_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,0].values, device=self.device, dtype=torch.float)
+        return torch.sum(torch.clip(((self.pos_buf*today_close_price) - self.max_position)/self.max_position, min = 0), dim = 1)
+    
     def _reward_sharpe(self):
         return 0
 
