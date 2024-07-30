@@ -19,7 +19,7 @@ class OnPolicyRunner:
         self.cfg = train_cfg["runner"]
         self.alg_cfg = train_cfg["algorithm"]
         self.policy_cfg = train_cfg["policy"]
-        self.device = "cuda" if torch.cuda.is_available() and device == "cuda" else "cpu"
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.env = env
         obs = self.env.get_observations()
         num_obs = obs.shape[1]
@@ -194,9 +194,6 @@ class OnPolicyRunner:
     def load(self, path, load_optimizer=True):
         loaded_dict = torch.load(path)
         self.alg.actor_critic.load_state_dict(loaded_dict["model_state_dict"])
-        if self.empirical_normalization:
-            self.obs_normalizer.load_state_dict(loaded_dict["obs_norm_state_dict"])
-            self.critic_obs_normalizer.load_state_dict(loaded_dict["critic_obs_norm_state_dict"])
         if load_optimizer:
             self.alg.optimizer.load_state_dict(loaded_dict["optimizer_state_dict"])
         self.current_learning_iteration = loaded_dict["iter"]
@@ -207,10 +204,6 @@ class OnPolicyRunner:
         if device is not None:
             self.alg.actor_critic.to(device)
         policy = self.alg.actor_critic.act_inference
-        if self.cfg["empirical_normalization"]:
-            if device is not None:
-                self.obs_normalizer.to(device)
-            policy = lambda x: self.alg.actor_critic.act_inference(self.obs_normalizer(x))  # noqa: E731
         return policy
 
     def train_mode(self):
@@ -221,6 +214,3 @@ class OnPolicyRunner:
 
     def eval_mode(self):
         self.alg.actor_critic.eval()
-        if self.empirical_normalization:
-            self.obs_normalizer.eval()
-            self.critic_obs_normalizer.eval()

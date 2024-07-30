@@ -169,6 +169,7 @@ class Trader():
         self.balance_buf[:] = self.cfg.trader.balance
         self.value_buf[:] = self.balance_buf
         self.date = pd.to_datetime(self.cfg.market.start_date)
+        
 
     def compute_observation(self):
         """

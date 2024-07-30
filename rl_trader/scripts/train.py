@@ -2,8 +2,6 @@ import sys
 sys.path.append('..')
 sys.path.append('../..')
 
-import numpy as np
-from datetime import datetime
 from utils.helpers import set_seed, get_args, welcome
 from utils.task_registry import task_registry
 from rl_trader.srcs import *

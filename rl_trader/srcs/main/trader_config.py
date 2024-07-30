@@ -13,8 +13,8 @@ class TraderCfg:
         start_date = '2013-01-31'
         end_date = '2023-01-01'
 
-        # uncomment when infering
-        # start_date = '2023-01-01'
+        # # uncomment when infering
+        # start_date = '2015-01-30'
         # end_date = '2024-07-01'
 
     class trader:
@@ -37,8 +37,10 @@ class TraderCfgPPO:
     runner_class_name = 'OnPolicyRunner'
     class policy:
         init_noise_std = 1.0
-        actor_hidden_dims = [512, 256, 128]
-        critic_hidden_dims = [512, 256, 128]
+        actor_hidden_dims = [256, 128, 64]
+        critic_hidden_dims = [256, 128, 64]
+        # actor_hidden_dims = [512, 256, 128]
+        # critic_hidden_dims = [512, 256, 128]
         activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         
     # TODO: REVIEW
