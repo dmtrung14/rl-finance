@@ -1,5 +1,22 @@
 ![banner](assets/img/banner.png)
 
+<br />
+<div align="center" style="border-style: solid; border-width: 1px; border-color: white">
+<h3 align="center">rl-finance</h3>
+
+  <p align="center">
+    Reinforcement Learning Pipeline for Algorithmic Trading
+    <br />
+    <a href=""><strong>Official website »</strong></a>
+    <br />
+    <br />
+    <a href="https://github.com/dmtrung14/rl-finance">GitHub</a>
+    ·
+    <a href="https://github.com/dmtrung14/rl-finance/issues">Report Bug</a>
+  </p>
+</div>
+
+
 # A Reinforcement Learning pipeline for Algorithmic Trading #
 
 This repository provides the environment used to train an Algorithmic Trading agent for dynamic exploration of the market using Reinforcement Learning.
@@ -11,12 +28,6 @@ This repository provides the environment used to train an Algorithmic Trading ag
 **Academic Inquiries**: tmdang@umass.edu
 
 ---
-
-## Useful Links ##
-
-- Project website: [To Update]
-- `rsl_rl` (PPO code structure): https://github.com/leggedrobotics/rsl_rl
-
 
 ## Installation ##
 1. Create a new python virtual env with python 3.8 or above
@@ -75,4 +86,4 @@ The default environment `main` is equipped with the agent that performs basic tr
 - [ ] Adding sentiment analysis and more complex observations.
 - [ ] Framework for Intraday Trading.
 - [ ] Integrate into broker services or simulators.
-- [ ] Explore DDPG in place of PPO
+- [ ] Explore DDPG in place of 
