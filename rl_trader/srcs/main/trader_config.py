@@ -1,6 +1,6 @@
 class TraderCfg:
     class env:
-        num_envs = 3072
+        num_envs = 4096
         num_obs = 326
         num_privileged_obs = 374
         num_actions = 12 # number of stocks to buy/sell
@@ -37,11 +37,11 @@ class TraderCfgPPO:
     runner_class_name = 'OnPolicyRunner'
     class policy:
         init_noise_std = 1.0
-        actor_hidden_dims = [256, 128, 64]
-        critic_hidden_dims = [256, 128, 64]
-        # actor_hidden_dims = [512, 256, 128]
-        # critic_hidden_dims = [512, 256, 128]
-        activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
+        # actor_hidden_dims = [256, 128, 64]
+        # critic_hidden_dims = [256, 128, 64]
+        actor_hidden_dims = [512, 256, 128]
+        critic_hidden_dims = [512, 256, 128]
+        activation = 'lrelu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         
     # TODO: REVIEW
     class algorithm:
@@ -63,11 +63,11 @@ class TraderCfgPPO:
     class runner:
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
-        num_steps_per_env = 7 # per iteration
-        max_iterations = 2000 # number of policy updates 4500 orginally
+        num_steps_per_env = 31 # per iteration
+        max_iterations = 100000 # number of policy updates 4500 orginally
 
         # logging
-        save_interval = 200 # check for potential saves every this many iterations
+        save_interval = 1000 # check for potential saves every this many iterations
         experiment_name = 'trader'
         run_name = ''
         # load and resume
