@@ -12,8 +12,7 @@ from rl_trader.srcs import *
 import torch
 import pandas as pd
 
-num_days = 110
-
+num_days = 365
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
