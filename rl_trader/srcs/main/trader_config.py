@@ -26,7 +26,7 @@ class TraderCfg:
     class rewards:
         class scales:
             termination = 5.0
-            profit = 1.0 * 10
+            profit = 1.0 * 15
             extreme_position = -1e-2
 
         only_positive_rewards = True
@@ -41,7 +41,9 @@ class TraderCfgPPO:
         critic_hidden_dims = [256, 128, 64]
         # actor_hidden_dims = [512, 256, 128]
         # critic_hidden_dims = [512, 256, 128]
-        activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
+        # actor_hidden_dims = [256, 256, 256]
+        # critic_hidden_dims = [256, 256, 256]
+        activation = 'relu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         
     # TODO: REVIEW
     class algorithm:
@@ -63,7 +65,7 @@ class TraderCfgPPO:
     class runner:
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
-        num_steps_per_env = 7 # per iteration
+        num_steps_per_env = 5 # per iteration
         max_iterations = 2000 # number of policy updates 4500 orginally
 
         # logging

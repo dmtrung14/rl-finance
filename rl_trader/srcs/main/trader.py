@@ -49,6 +49,7 @@ class Trader():
         self.pos_buf = torch.zeros(self.num_envs, self.num_actions, device=self.device, dtype=torch.float)
         self.balance_buf = torch.full((self.num_envs,), self.cfg.trader.balance, device=self.device, dtype=torch.float).T
         self.value_buf = self.balance_buf.clone()
+        self.old_value_buf = self.balance_buf.clone()
         self.obs_buf = torch.zeros(self.num_envs, self.num_obs, device=self.device, dtype=torch.float)
         self.rew_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
         self.reset_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
@@ -143,6 +144,7 @@ class Trader():
         self.compute_observation()
     
     def compute_value(self):
+        self.old_value_buf = self.value_buf.clone()
         today_close_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,0].values, device=self.device, dtype=torch.float).unsqueeze(1)
         self.value_buf = self.balance_buf + torch.sum(torch.matmul(self.pos_buf, today_close_price), dim=1)
 
@@ -217,7 +219,10 @@ class Trader():
         return self.reset_buf * ~self.timeout
 
     def _reward_profit(self):
-        return (self.value_buf - self.cfg.trader.balance) / self.cfg.trader.balance
+
+        # TODO : update self.old_value_buf
+        return (self.value_buf - self.old_value_buf) / self.old_value_buf
+
 
     def _reward_extreme_position(self):
         today_close_price = torch.tensor(self.finance_df.loc[self.date].iloc[:,0].values, device=self.device, dtype=torch.float)
